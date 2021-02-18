@@ -1064,6 +1064,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = E654EAA11B6B27E600B0F2D0 /* Build configuration list for PBXNativeTarget "IJKMediaFramework" */;
 			buildPhases = (
+				3A35656825DE46E2001C078B /* Prepare */,
 				544E73271D93DEF4005CA5D9 /* ijkversion.h */,
 				E654EA851B6B27E600B0F2D0 /* Sources */,
 				E654EA861B6B27E600B0F2D0 /* Frameworks */,
@@ -1159,6 +1160,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		3A35656825DE46E2001C078B /* Prepare */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = Prepare;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nsh \"${PROJECT_DIR}/prepare.sh\"\n";
+		};
 		544E73271D93DEF4005CA5D9 /* ijkversion.h */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1171,7 +1190,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "sh \"${PROJECT_DIR}/../../ijkmedia/ijkplayer/version.sh\" \"${PROJECT_DIR}/../../ijkmedia/ijkplayer\" \"ijkversion.h\"";
+			shellScript = "sh \"${PROJECT_DIR}/../../ijkmedia/ijkplayer/version.sh\" \"${PROJECT_DIR}/../../ijkmedia/ijkplayer\" \"ijkversion.h\"\n";
 		};
 		5450AFC21E63EA4300568494 /* ijkversion.h */ = {
 			isa = PBXShellScriptBuildPhase;
