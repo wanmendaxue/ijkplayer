@@ -912,20 +912,24 @@ static IJKAVMoviePlayerController* instance;
                                  name:UIApplicationWillEnterForegroundNotification
                                object:nil];
 
-    [_notificationManager addObserver:self
-                             selector:@selector(applicationDidBecomeActive)
-                                 name:UIApplicationDidBecomeActiveNotification
-                               object:nil];
+  /* by shang */
+//    [_notificationManager addObserver:self
+//                             selector:@selector(applicationDidBecomeActive)
+//                                 name:UIApplicationDidBecomeActiveNotification
+//                               object:nil];
+  /* end */
 
     [_notificationManager addObserver:self
                              selector:@selector(applicationWillResignActive)
                                  name:UIApplicationWillResignActiveNotification
                                object:nil];
 
-    [_notificationManager addObserver:self
-                             selector:@selector(applicationDidEnterBackground)
-                                 name:UIApplicationDidEnterBackgroundNotification
-                               object:nil];
+  /* by shang */
+//    [_notificationManager addObserver:self
+//                             selector:@selector(applicationDidEnterBackground)
+//                                 name:UIApplicationDidEnterBackgroundNotification
+//                               object:nil];
+  /* end */
 
     [_notificationManager addObserver:self
                              selector:@selector(applicationWillTerminate)
