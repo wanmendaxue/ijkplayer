@@ -38,6 +38,5 @@ build/
 
 # Xcode
 xcuserdata
-xcshareddata
 *.xccheckout
 
