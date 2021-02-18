@@ -118,6 +118,14 @@ static void *KVO_AVPlayerItem_playbackBufferEmpty       = &KVO_AVPlayerItem_play
     AVURLAsset      *_playAsset;
     AVPlayerItem    *_playerItem;
     AVPlayer        *_player;
+
+  /* add by shang for thumbnail image  2019-09-07*/
+  AVPlayerItemVideoOutput *_videoOutPut;
+  AVPlayerItemVideoOutput *_snapshotOutput;
+  CVPixelBufferRef _lastSnapshotPixelBuffer;
+  /*end shang   2019-09-07*/
+
+
     IJKAVPlayerLayerView * _avView;
     
     IJKKVOController *_playerKVO;
@@ -234,7 +242,10 @@ static IJKAVMoviePlayerController* instance;
 
 - (void)setScreenOn: (BOOL)on
 {
-    [IJKMediaModule sharedModule].mediaModuleIdleTimerDisabled = on;
+
+  // start shang 2020-04-01 WMMediaPlayer 要自己控制是否自动休眠
+//    [IJKMediaModule sharedModule].mediaModuleIdleTimerDisabled = on;
+  // end shang 2020-04-01 WMMediaPlayer 要自己控制是否自动休眠
 }
 
 - (void)dealloc
@@ -242,24 +253,57 @@ static IJKAVMoviePlayerController* instance;
     [self shutdown];
 }
 
+/* add by shang for add requestHeader 2020-05-12*/
+- (void)prepareToPlayForAVPlayerWithHeader:(NSDictionary*)headers {
+
+  NSMutableDictionary *options = [NSMutableDictionary dictionary];
+  if (headers.count) {
+    [options setValue:headers forKey:@"AVURLAssetHTTPHeaderFieldsKey"];
+  }
+  AVURLAsset *asset = [AVURLAsset URLAssetWithURL:_playUrl options:options];
+  NSArray *requestedKeys = @[@"playable"];
+
+  _playAsset = asset;
+  [asset loadValuesAsynchronouslyForKeys:requestedKeys
+                       completionHandler:^{
+                           dispatch_async( dispatch_get_main_queue(), ^{
+                               [self didPrepareToPlayAsset:asset withKeys:requestedKeys];
+                               [[NSNotificationCenter defaultCenter]
+                                postNotificationName:IJKMPMovieNaturalSizeAvailableNotification
+                                object:self];
+
+                               [self setPlaybackVolume:_playbackVolume];
+                           });
+                       }];
+}
+
 - (void)prepareToPlay
 {
-    AVURLAsset *asset = [AVURLAsset URLAssetWithURL:_playUrl options:nil];
-    NSArray *requestedKeys = @[@"playable"];
-    
-    _playAsset = asset;
-    [asset loadValuesAsynchronouslyForKeys:requestedKeys
-                         completionHandler:^{
-                             dispatch_async( dispatch_get_main_queue(), ^{
-                                 [self didPrepareToPlayAsset:asset withKeys:requestedKeys];
-                                 [[NSNotificationCenter defaultCenter]
-                                  postNotificationName:IJKMPMovieNaturalSizeAvailableNotification
-                                  object:self];
-
-                                 [self setPlaybackVolume:_playbackVolume];
-                             });
-                         }];
+  [self prepareToPlayForAVPlayerWithHeader:nil];
 }
+
+//  before function  prepareToPlay
+//- (void)prepareToPlay
+//{
+//    AVURLAsset *asset = [AVURLAsset URLAssetWithURL:_playUrl options:nil];
+//    NSArray *requestedKeys = @[@"playable"];
+//
+//    _playAsset = asset;
+//    [asset loadValuesAsynchronouslyForKeys:requestedKeys
+//                         completionHandler:^{
+//                             dispatch_async( dispatch_get_main_queue(), ^{
+//                                 [self didPrepareToPlayAsset:asset withKeys:requestedKeys];
+//                                 [[NSNotificationCenter defaultCenter]
+//                                  postNotificationName:IJKMPMovieNaturalSizeAvailableNotification
+//                                  object:self];
+//
+//                                 [self setPlaybackVolume:_playbackVolume];
+//                             });
+//                         }];
+//}
+
+/* end  2020-05-12*/
+
 
 - (void)play
 {
@@ -304,6 +348,12 @@ static IJKAVMoviePlayerController* instance;
     [self stop];
     
     if (_playerItem != nil) {
+
+        /* add by shang for thumbnail image  2019-09-07*/
+        [_playerItem removeOutput:_snapshotOutput];
+        _snapshotOutput = nil;
+        /*end shang   2019-09-07*/
+
         [_playerItem cancelPendingSeeks];
     }
     
@@ -323,25 +373,51 @@ static IJKAVMoviePlayerController* instance;
     self.view = nil;
 }
 
+/* add by shang for thumbnail image  2019-09-07*/
+//old
+//- (UIImage *)thumbnailImageAtCurrentTime
+//{
+//    AVAssetImageGenerator *imageGenerator = [AVAssetImageGenerator assetImageGeneratorWithAsset:_playAsset];
+//    CMTime expectedTime = _playerItem.currentTime;
+//    CGImageRef cgImage = NULL;
+//
+//    imageGenerator.requestedTimeToleranceBefore = kCMTimeZero;
+//    imageGenerator.requestedTimeToleranceAfter = kCMTimeZero;
+//    cgImage = [imageGenerator copyCGImageAtTime:expectedTime actualTime:NULL error:NULL];
+//
+//    if (!cgImage) {
+//        imageGenerator.requestedTimeToleranceBefore = kCMTimePositiveInfinity;
+//        imageGenerator.requestedTimeToleranceAfter = kCMTimePositiveInfinity;
+//        cgImage = [imageGenerator copyCGImageAtTime:expectedTime actualTime:NULL error:NULL];
+//    }
+//
+//    UIImage *image = [UIImage imageWithCGImage:cgImage];
+//    return image;
+//}
+
+//new
 - (UIImage *)thumbnailImageAtCurrentTime
 {
-    AVAssetImageGenerator *imageGenerator = [AVAssetImageGenerator assetImageGeneratorWithAsset:_playAsset];
-    CMTime expectedTime = _playerItem.currentTime;
-    CGImageRef cgImage = NULL;
-    
-    imageGenerator.requestedTimeToleranceBefore = kCMTimeZero;
-    imageGenerator.requestedTimeToleranceAfter = kCMTimeZero;
-    cgImage = [imageGenerator copyCGImageAtTime:expectedTime actualTime:NULL error:NULL];
-    
-    if (!cgImage) {
-        imageGenerator.requestedTimeToleranceBefore = kCMTimePositiveInfinity;
-        imageGenerator.requestedTimeToleranceAfter = kCMTimePositiveInfinity;
-        cgImage = [imageGenerator copyCGImageAtTime:expectedTime actualTime:NULL error:NULL];
+    CMTime time = [_snapshotOutput itemTimeForHostTime:CACurrentMediaTime()];
+    if ([_snapshotOutput hasNewPixelBufferForItemTime:time]) {
+        _lastSnapshotPixelBuffer = [_snapshotOutput copyPixelBufferForItemTime:time itemTimeForDisplay:NULL];
     }
-    
-    UIImage *image = [UIImage imageWithCGImage:cgImage];
-    return image;
+
+    if (_lastSnapshotPixelBuffer) {
+        CIImage *ciImage = [CIImage imageWithCVPixelBuffer:_lastSnapshotPixelBuffer];
+        CIContext *context = [CIContext contextWithOptions:NULL];
+        CGRect rect = CGRectMake(0,
+                                 0,
+                                 CVPixelBufferGetWidth(_lastSnapshotPixelBuffer),
+                                 CVPixelBufferGetHeight(_lastSnapshotPixelBuffer));
+        CGImageRef cgImage = [context createCGImage:ciImage fromRect:rect];
+        UIImage *resultImage = [UIImage imageWithCGImage:cgImage];
+        CGImageRelease(cgImage);
+        return resultImage;
+    }
+    return nil;
 }
+/*end shang   2019-09-07*/
 
 - (void)setCurrentPlaybackTime:(NSTimeInterval)aCurrentPlaybackTime
 {
@@ -562,6 +638,15 @@ static IJKAVMoviePlayerController* instance;
                                                object:_playerItem];
     
     _isCompleted = NO;
+
+
+    /* add by shang for thumbnail image  2019-09-07*/
+    _snapshotOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:NULL];
+    [_playerItem removeOutput:_snapshotOutput];
+    [_playerItem addOutput:_snapshotOutput];
+    /*end shang   2019-09-07*/
+
+
     
     /* Create new player, if we don't already have one. */
     if (!_player)
