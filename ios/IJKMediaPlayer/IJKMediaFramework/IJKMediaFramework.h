@@ -41,6 +41,10 @@ FOUNDATION_EXPORT const unsigned char IJKMediaFrameworkVersionString[];
 #import <IJKMediaFramework/IJKKVOController.h>
 #import <IJKMediaFramework/IJKSDLGLViewProtocol.h>
 
+/* add by shang */
+#import <IJKMediaFramework/IJKAVPlayerLayerView.h>
+/* end */
+
 // backward compatible for old names
 #define IJKMediaPlaybackIsPreparedToPlayDidChangeNotification IJKMPMediaPlaybackIsPreparedToPlayDidChangeNotification
 #define IJKMoviePlayerLoadStateDidChangeNotification IJKMPMoviePlayerLoadStateDidChangeNotification
