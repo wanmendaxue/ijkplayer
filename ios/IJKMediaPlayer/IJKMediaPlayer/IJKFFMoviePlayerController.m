@@ -34,7 +34,13 @@
 #import "ijkioapplication.h"
 #include "string.h"
 
-static const char *kIJKFFRequiredFFmpegVersion = "ff4.0--ijk0.8.8--20201130--001";
+/* shang
+ fork 时 ijkplayer官方的最新tag为k0.8.8， 且master有多个在tag k0.8.8 之后合并的功能，
+ 所以我沿用了master的代码，并建立最新tag 为 v0.8.9
+
+ carthage使用：github "https://github.com/wanmendaxue/ijkplayer"  == 0.8.9
+ */
+static const char *kIJKFFRequiredFFmpegVersion = "ff4.0--ijk0.8.9--20210205--001";
 
 // It means you didn't call shutdown if you found this object leaked.
 @interface IJKWeakHolder : NSObject
