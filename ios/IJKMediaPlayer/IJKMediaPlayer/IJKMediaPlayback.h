@@ -67,6 +67,10 @@ typedef NS_ENUM(NSInteger, IJKMPMovieTimeOption) {
 
 @protocol IJKMediaPlayback <NSObject>
 
+/* add by shang for add requestHeader 2020-05-12*/
+- (void)prepareToPlayForAVPlayerWithHeader:(NSDictionary*)headers;
+/* end  2020-05-12*/
+
 - (void)prepareToPlay;
 - (void)play;
 - (void)pause;
