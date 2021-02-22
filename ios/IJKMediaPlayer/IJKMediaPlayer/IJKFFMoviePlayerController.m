@@ -383,6 +383,11 @@ void IJKFFIOStatCompleteRegister(void (*cb)(const char *url,
     return _shouldAutoplay;
 }
 
+/* add by shang for add requestHeader 2020-05-12*/
+- (void)prepareToPlayForAVPlayerWithHeader:(NSDictionary*)headers {
+}
+/* end  2020-05-12*/
+
 - (void)prepareToPlay
 {
     if (!_mediaPlayer)
